@@ -15,9 +15,12 @@ class MapPublisher(Node):
             namespace='',
             parameters=[
                 ('map', 'no path'),
+                ('map_topic', '/map'),
+                ('rate', 1.0),
             ])
 
 
+        self.map_publisher = self.create_publisher(OccupancyGrid, self.get_parameter('map_topic').get_parameter_value().string_value, 10)
 
         self.path = ''
         self.yaml_file = ''
@@ -32,8 +35,11 @@ class MapPublisher(Node):
         self.grid_map = OccupancyGrid()
         self.read_map()
 
-        self.timer = self.create_timer(1.0, self.publish_map)
-        self.map_publisher = self.create_publisher(OccupancyGrid, '/map/t', 10)
+        self.publish_map()
+
+        rate = self.get_parameter('rate').get_parameter_value().double_value
+        if rate  != 0.0:
+            self.timer = self.create_timer(rate, self.publish_map)
         
 
     def publish_map(self):
